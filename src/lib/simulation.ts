@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { ensureDemoData } from "./demo-data";
 import { addEvent, applyStatus, updateLocation } from "./deliveries";
 import { interpolate, LngLat } from "./domain";
 
@@ -52,6 +53,7 @@ export async function stopSimulation(trackingCode: string): Promise<void> {
  * least IN_TRANSIT, then ticks progress forward until delivered.
  */
 export async function startSimulation(trackingCode: string): Promise<boolean> {
+  await ensureDemoData(prisma);
   const delivery = await prisma.delivery.findUnique({ where: { trackingCode } });
   if (!delivery) return false;
   if (delivery.status === "DELIVERED") return false;

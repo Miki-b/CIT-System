@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { broadcastDelivery } from "./bus";
+import { ensureDemoData } from "./demo-data";
 import {
   DELIVERY_INCLUDE,
   DeliveryDTO,
@@ -17,6 +18,7 @@ import {
 export async function getDeliveryByCode(
   trackingCode: string
 ): Promise<DeliveryDTO | null> {
+  await ensureDemoData(prisma);
   const d = await prisma.delivery.findUnique({
     where: { trackingCode },
     include: DELIVERY_INCLUDE,
@@ -25,6 +27,7 @@ export async function getDeliveryByCode(
 }
 
 export async function listDeliveries(): Promise<DeliveryDTO[]> {
+  await ensureDemoData(prisma);
   const rows = await prisma.delivery.findMany({
     include: DELIVERY_INCLUDE,
     orderBy: { createdAt: "desc" },

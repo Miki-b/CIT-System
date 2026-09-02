@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureDemoData } from "@/lib/demo-data";
 import { listDeliveries } from "@/lib/deliveries";
 import { createDeliverySchema } from "@/lib/domain";
 import { nextTrackingCode } from "@/lib/codes";
@@ -13,6 +14,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  await ensureDemoData(prisma);
   let body: unknown;
   try {
     body = await req.json();

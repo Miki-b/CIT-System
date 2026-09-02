@@ -1,19 +1,15 @@
 // CIT Delivery Tracking — Prisma schema
 //
-// The prototype uses SQLite for zero-config, reliable local setup.
-// SQLite does not support native enums, so enum-like fields (role, status,
-// priority, event type) are stored as strings and validated in the app layer
-// via src/lib/domain.ts (Zod + TypeScript unions).
-//
-// To switch to PostgreSQL: change `provider` below to "postgresql", point
-// DATABASE_URL at your Postgres instance, then run `prisma db push`.
+// The deployed prototype uses PostgreSQL because Vercel serverless functions
+// do not provide a persistent project-local SQLite database. Enum-like fields
+// are stored as strings and validated in the app layer via src/lib/domain.ts.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,14 +22,14 @@ model User {
 }
 
 model Driver {
-  id              String     @id @default(cuid())
-  name            String
-  phone           String
-  status          String     @default("AVAILABLE") // AVAILABLE | ON_DELIVERY | OFFLINE
-  currentLatitude Float?
+  id               String     @id @default(cuid())
+  name             String
+  phone            String
+  status           String     @default("AVAILABLE") // AVAILABLE | ON_DELIVERY | OFFLINE
+  currentLatitude  Float?
   currentLongitude Float?
-  createdAt       DateTime   @default(now())
-  deliveries      Delivery[]
+  createdAt        DateTime   @default(now())
+  deliveries       Delivery[]
 }
 
 model Client {

@@ -22,19 +22,39 @@ A polished, working prototype of a **Cash-in-Transit (CIT) delivery tracking sys
 
 ---
 
+## Vercel Deployment
+
+This app needs a hosted PostgreSQL database on Vercel. SQLite is not a
+persistent database inside Vercel serverless functions.
+
+1. Create or link the project in Vercel.
+2. Add a Postgres database, for example Neon from the Vercel Marketplace.
+3. Set `DATABASE_URL` for Production, Preview, and Development.
+4. Deploy normally. The build runs `prisma generate` and `prisma db push`.
+5. Open `/track/CIT-1001` or `/admin`; demo data is inserted automatically if
+   the database is empty.
+
+Optional: set `NEXT_PUBLIC_MAPBOX_TOKEN` if you want real Mapbox tiles. Without
+it, the built-in fallback map still renders.
+
+---
+
 ## 🧱 Tech Stack
 
 - **Next.js 15** (App Router) + **React 19**
 - **TypeScript**
 - **Tailwind CSS**
-- **Prisma ORM** + **SQLite** (zero-config; Postgres-portable — see below)
+- **Prisma ORM** + **PostgreSQL**
 - **Server-Sent Events** for real-time updates (in-memory pub/sub, single process)
 - **Mapbox GL** for maps (optional token; animated SVG fallback included)
 - **Zod** for input validation
 - **Lucide** icons
 
-### Why SQLite for the prototype?
-The brief calls for PostgreSQL, but a demo must "just work" after a clean install. SQLite requires **no running database server**, which makes the demo far more reliable. The schema is standard and **Postgres-portable**: change the `datasource` provider in `prisma/schema.prisma` to `postgresql`, point `DATABASE_URL` at your instance, and run `npx prisma db push`. (Enum-like fields are stored as strings and validated in `src/lib/domain.ts`, so they work identically on either database.)
+### Why PostgreSQL for deployment?
+Vercel serverless functions do not provide a persistent project-local SQLite
+database. PostgreSQL keeps the demo data available across requests and
+deployments. Enum-like fields are stored as strings and validated in
+`src/lib/domain.ts`, so the schema stays simple.
 
 ---
 
@@ -43,8 +63,8 @@ The brief calls for PostgreSQL, but a demo must "just work" after a clean instal
 Create a `.env` file (copy from `.env.example`):
 
 ```env
-# SQLite (default — no setup required)
-DATABASE_URL="file:./dev.db"
+# Hosted Postgres, such as Neon on Vercel Marketplace
+DATABASE_URL="postgresql://user:password@host:5432/cit?schema=public"
 
 # Optional Mapbox public token (starts with pk.). Leave blank to use the
 # built-in animated fallback map — the live demo works either way.
@@ -180,7 +200,7 @@ Drivers: Daniel Bekele, Samuel Tesfaye, Michael Adams (+ two available). Clients
 - **Not production-hardened:** no authentication/authorization, rate limiting, or multi-tenant isolation.
 - **In-memory real-time & simulation** assume a single Node process — great locally, but would need Redis/a job runner to scale horizontally.
 - **Straight-line routes:** the route/ETA are geometric interpolations, not real road routing or traffic-aware ETAs.
-- **SQLite** by default (swap to Postgres as described above for production).
+- **PostgreSQL** database required for deployed environments.
 - Tuned for a punchy demo: a full simulated run takes ~40 seconds.
 #   C I T - S y s t e m  
  

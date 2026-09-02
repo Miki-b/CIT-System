@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { ensureDemoData } from "@/lib/demo-data";
 import { CreateDeliveryForm } from "@/components/CreateDeliveryForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewDeliveryPage() {
+  await ensureDemoData(prisma);
   const [clients, drivers] = await Promise.all([
     prisma.client.findMany({ orderBy: { name: "asc" } }),
     prisma.driver.findMany({ orderBy: { name: "asc" } }),

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureDemoData } from "@/lib/demo-data";
 import { applyStatus, refreshAndBroadcast } from "@/lib/deliveries";
 import { DRIVER_ACTIONS, DeliveryStatus, interpolate, LngLat } from "@/lib/domain";
 import { stopSimulation } from "@/lib/simulation";
@@ -14,6 +15,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
+  await ensureDemoData(prisma);
   const { code } = await params;
   let body: { action?: string; driverId?: string } = {};
   try {

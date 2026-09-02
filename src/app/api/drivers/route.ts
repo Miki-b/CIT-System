@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureDemoData } from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await ensureDemoData(prisma);
   const drivers = await prisma.driver.findMany({
     orderBy: { name: "asc" },
     include: { _count: { select: { deliveries: true } } },

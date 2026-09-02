@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Phone, Truck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { ensureDemoData } from "@/lib/demo-data";
 import { PageHeader } from "@/components/AdminShell";
 import { DriverStatusBadge } from "@/components/Badges";
 import { StatusBadge } from "@/components/Badges";
@@ -9,6 +10,7 @@ import { DeliveryStatus, DriverStatus } from "@/lib/domain";
 export const dynamic = "force-dynamic";
 
 export default async function DriversPage() {
+  await ensureDemoData(prisma);
   const drivers = await prisma.driver.findMany({
     orderBy: { name: "asc" },
     include: {
