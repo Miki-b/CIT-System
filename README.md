@@ -1,206 +1,809 @@
 # CITSecure — Cash-in-Transit Delivery Tracking
 
-A polished, working prototype of a **Cash-in-Transit (CIT) delivery tracking system**. A dispatcher creates and assigns deliveries, a driver progresses them through a secure workflow, and a client watches the consignment move **live** on a map — from pickup to drop-off — with no page refresh.
+A polished, working prototype of a **Cash-in-Transit (CIT) delivery tracking system**.
 
-> Built for a short product demo. Prioritizes reliability, realistic workflows, and visual polish. GPS movement is **simulated server-side** so no phone or physical GPS is required.
+CITSecure demonstrates a complete delivery workflow where a **dispatcher creates and assigns deliveries**, a **driver progresses them through a controlled workflow**, and a **client tracks the consignment live on a map** — from pickup to drop-off — without refreshing the page.
+
+> **Prototype:** Built for a short product demo with a strong focus on reliability, realistic workflows, and visual polish. GPS movement is **simulated server-side**, so no physical GPS device or mobile hardware is required.
 
 ---
 
 ## ✨ Features
 
-- **Live tracking** — the client tracking page and admin views update in real time over **Server-Sent Events** (with an automatic polling fallback).
-- **Server-side GPS simulation** — a "Start Live Delivery Simulation" button drives the driver marker along the route, advancing status, ETA, and the event timeline automatically, broadcasting to every connected screen.
-- **Three role experiences**
-  - **Dispatcher / Admin** — dashboard with live stats, deliveries table, create form, driver roster, live tracking board, and a full delivery detail/control screen.
-  - **Driver** — a mobile-first app with the current assignment, a state-machine action button (Start Pickup → Confirm Pickup → Start Delivery → Arriving Soon → Mark Delivered), and GPS simulation.
-  - **Client** — a public, polished tracking page reached via a tracking code (`/track/CIT-1001`). No login required.
-- **Auto-generated tracking codes** (`CIT-1001`, `CIT-1002`, …) and shareable client tracking links with copy-to-clipboard.
-- **Delivery timeline** — every milestone is recorded and rendered as a live-updating timeline.
-- **Map with graceful fallback** — uses **Mapbox GL** when a token is provided; otherwise renders a built-in, animated SVG map so the live demo always works.
-- **Controlled status model** — `CREATED → ASSIGNED → AT_PICKUP → PICKED_UP → IN_TRANSIT → NEAR_DESTINATION → DELIVERED`, each with distinct badges and colors.
-- **Seeded demo data** — three deliveries ready to show, including one already in transit.
+### Live Delivery Tracking
+
+* Real-time updates using **Server-Sent Events (SSE)**
+* Automatic **3-second polling fallback** if the stream disconnects
+* Live driver position updates
+* Live delivery status updates
+* Live ETA updates
+* Real-time delivery timeline
+
+### Server-Side GPS Simulation
+
+A delivery can be started using **Start Live Delivery Simulation**.
+
+The server automatically:
+
+* Moves the driver marker along the route
+* Updates GPS coordinates
+* Updates the estimated arrival time
+* Advances delivery statuses
+* Adds timeline events
+* Broadcasts changes to all connected clients
+* Automatically stops when the delivery reaches `DELIVERED`
+
+### Three Role Experiences
+
+#### Dispatcher / Admin
+
+The admin experience includes:
+
+* Dashboard with live delivery statistics
+* Deliveries table
+* Delivery creation form
+* Driver roster
+* Live tracking board
+* Delivery detail and control screen
+* Client tracking link generation
+* Live map and driver position
+
+#### Driver
+
+A mobile-first driver application with:
+
+* Current delivery assignment
+* Delivery information
+* Controlled state-machine workflow
+* GPS simulation
+* Delivery action controls
+
+Driver actions:
+
+```text
+Start Pickup
+    ↓
+Confirm Pickup
+    ↓
+Start Delivery
+    ↓
+Arriving Soon
+    ↓
+Mark Delivered
+```
+
+#### Client
+
+A public tracking page accessible using a tracking code:
+
+```text
+/track/CIT-1001
+```
+
+No login is required.
+
+The client can view:
+
+* Current delivery status
+* Live map
+* Driver position
+* ETA
+* Last updated time
+* Delivery timeline
+* Completion confirmation
+
+### Tracking Codes
+
+Tracking codes are generated automatically:
+
+```text
+CIT-1001
+CIT-1002
+CIT-1003
+...
+```
+
+Each delivery can also generate a shareable client tracking URL with **copy-to-clipboard** support.
+
+### Delivery Timeline
+
+Every important delivery milestone is recorded as an event and displayed in a live-updating timeline.
+
+### Map with Graceful Fallback
+
+CITSecure supports:
+
+* **Mapbox GL** when a Mapbox token is configured
+* A built-in **animated SVG map fallback** when no token is provided
+
+This ensures the demo remains functional even without external map configuration.
+
+### Controlled Delivery Status Model
+
+Deliveries progress through a controlled workflow:
+
+```text
+CREATED
+   ↓
+ASSIGNED
+   ↓
+AT_PICKUP
+   ↓
+PICKED_UP
+   ↓
+IN_TRANSIT
+   ↓
+NEAR_DESTINATION
+   ↓
+DELIVERED
+```
+
+Each status has its own visual badge and state representation.
+
+### Seeded Demo Data
+
+The application includes realistic demo data so the system can be demonstrated immediately after setup.
 
 ---
 
-## Vercel Deployment
+# 🚀 Deployment on Vercel
 
-This app needs a hosted PostgreSQL database on Vercel. SQLite is not a
-persistent database inside Vercel serverless functions.
+CITSecure uses PostgreSQL for deployed environments.
 
-1. Create or link the project in Vercel.
-2. Add a Postgres database, for example Neon from the Vercel Marketplace.
-3. Set `DATABASE_URL` for Production, Preview, and Development.
-4. Deploy normally. The build runs `prisma generate` and `prisma db push`.
-5. Open `/track/CIT-1001` or `/admin`; demo data is inserted automatically if
-   the database is empty.
+> **Important:** Vercel serverless functions do not provide persistent project-local SQLite storage. A hosted PostgreSQL database such as Neon should be used instead.
 
-Optional: set `NEXT_PUBLIC_MAPBOX_TOKEN` if you want real Mapbox tiles. Without
-it, the built-in fallback map still renders.
+### 1. Create or Link the Vercel Project
 
----
+Deploy the repository to Vercel or connect an existing Vercel project.
 
-## 🧱 Tech Stack
+### 2. Add PostgreSQL
 
-- **Next.js 15** (App Router) + **React 19**
-- **TypeScript**
-- **Tailwind CSS**
-- **Prisma ORM** + **PostgreSQL**
-- **Server-Sent Events** for real-time updates (in-memory pub/sub, single process)
-- **Mapbox GL** for maps (optional token; animated SVG fallback included)
-- **Zod** for input validation
-- **Lucide** icons
+Create a PostgreSQL database, for example:
 
-### Why PostgreSQL for deployment?
-Vercel serverless functions do not provide a persistent project-local SQLite
-database. PostgreSQL keeps the demo data available across requests and
-deployments. Enum-like fields are stored as strings and validated in
-`src/lib/domain.ts`, so the schema stays simple.
+* Neon through the Vercel Marketplace
+* Another managed PostgreSQL provider
 
----
+### 3. Configure Environment Variables
 
-## 🔐 Environment Variables
+Add the following environment variables for:
 
-Create a `.env` file (copy from `.env.example`):
+* Production
+* Preview
+* Development
 
 ```env
-# Hosted Postgres, such as Neon on Vercel Marketplace
 DATABASE_URL="postgresql://user:password@host:5432/cit?schema=public"
+```
 
-# Optional Mapbox public token (starts with pk.). Leave blank to use the
-# built-in animated fallback map — the live demo works either way.
+### 4. Deploy
+
+The deployment build automatically runs:
+
+```bash
+prisma generate
+prisma db push
+```
+
+### 5. Open the Demo
+
+After deployment, use:
+
+```text
+/track/CIT-1001
+/admin
+```
+
+Demo data is automatically inserted when the database is empty.
+
+### Optional Mapbox Configuration
+
+To use real Mapbox tiles, add:
+
+```env
 NEXT_PUBLIC_MAPBOX_TOKEN=
 ```
 
-Get a free Mapbox token at <https://account.mapbox.com/access-tokens/> if you want real map tiles. **It is optional.**
+Without a token, CITSecure automatically uses the built-in animated fallback map.
 
 ---
 
-## 🚀 Installation & Setup
+# 🧱 Tech Stack
 
-Requires **Node 18+** (developed on Node 22).
+| Technology             | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| **Next.js 15**         | Full-stack React framework and application routing |
+| **React 19**           | UI development                                     |
+| **TypeScript**         | Type-safe application development                  |
+| **Tailwind CSS**       | Styling and responsive UI                          |
+| **Prisma ORM**         | Database access and schema management              |
+| **PostgreSQL**         | Persistent production database                     |
+| **Server-Sent Events** | Real-time delivery updates                         |
+| **Mapbox GL**          | Interactive map rendering                          |
+| **Zod**                | Request and input validation                       |
+| **Lucide**             | UI icons                                           |
+
+---
+
+## Why PostgreSQL?
+
+CITSecure uses PostgreSQL because deployed Vercel serverless functions cannot rely on a persistent local SQLite database.
+
+PostgreSQL provides:
+
+* Persistent storage
+* Reliable data across serverless invocations
+* Better deployment compatibility
+* Easier future scaling
+
+Enum-like values such as delivery status and user roles are stored as strings and validated centrally in:
+
+```text
+src/lib/domain.ts
+```
+
+This keeps the database schema simple while preserving application-level validation.
+
+---
+
+# 🔐 Environment Variables
+
+Create a `.env` file based on `.env.example`.
+
+```env
+# Hosted PostgreSQL database
+DATABASE_URL="postgresql://user:password@host:5432/cit?schema=public"
+
+# Optional Mapbox public token
+# Leave blank to use the built-in animated SVG map
+NEXT_PUBLIC_MAPBOX_TOKEN=
+```
+
+A free Mapbox access token can be created from:
+
+https://account.mapbox.com/access-tokens/
+
+> Mapbox is completely optional. The demo works without it.
+
+---
+
+# 🛠️ Installation & Setup
+
+## Requirements
+
+* **Node.js 18+**
+* Developed and tested with **Node.js 22**
+* PostgreSQL database
+
+## 1. Install Dependencies
 
 ```bash
-# 1. Install dependencies
 npm install
+```
 
-# 2. Create your env file
-cp .env.example .env        # Windows PowerShell: Copy-Item .env.example .env
+## 2. Create Environment File
 
-# 3. Create the database schema and generate the Prisma client
+### macOS / Linux
+
+```bash
+cp .env.example .env
+```
+
+### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Configure your `DATABASE_URL` inside `.env`.
+
+## 3. Create the Database Schema
+
+```bash
 npx prisma db push
+```
 
-# 4. Seed realistic demo data
+## 4. Seed Demo Data
+
+```bash
 npm run db:seed
+```
 
-# 5. Run the app
+## 5. Start the Application
+
+```bash
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+Open:
 
-> **Shortcut:** `npm run setup` runs steps 3–4 (`prisma db push` + seed) in one go.
-> **Reset demo data at any time:** `npm run db:reset`.
-
-### Handy scripts
-
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Production build (runs `prisma generate` first) |
-| `npm run start` | Start the production server |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript check (no emit) |
-| `npm run db:push` | Apply the Prisma schema to the database |
-| `npm run db:seed` | Seed demo data |
-| `npm run db:reset` | Reset schema + re-seed |
-| `npm run setup` | `db:push` + `db:seed` |
+```text
+http://localhost:3000
+```
 
 ---
 
-## 🎬 3-Minute Demo Flow
+## ⚡ Quick Setup
 
-This is the flow the app is optimized for:
+The following command performs database setup and seeding:
 
-1. **Open the Dispatcher Dashboard** → <http://localhost:3000/admin>
-   Live stats (active, in transit, awaiting pickup, completed, drivers available) and a "Live now" section.
-2. **Open delivery CIT-1001** → <http://localhost:3000/admin/deliveries/CIT-1001>
-   The map, route, driver position, ETA, and timeline appear. Copy the client tracking link here.
-3. **In a second browser tab, open the client tracking page** → <http://localhost:3000/track/CIT-1001>
-   This is the customer-facing screen: status rail, live map, ETA, "Last updated", timeline.
-4. **On the delivery detail page, click "Start Live Delivery Simulation".**
-5. **Watch both tabs update live, with no refresh:**
-   - the driver marker glides along the route,
-   - the ETA counts down,
-   - the status advances (In Transit → Near Destination),
-   - the timeline gains new events,
-   - the client's status rail lights up step by step.
-6. **The simulation completes automatically.** Status becomes **Delivered** and the client page shows **"Delivery completed successfully."**
+```bash
+npm run setup
+```
 
-> Prefer to drive it manually? Open the **Driver App** (<http://localhost:3000/driver>), step through the action buttons, and use **Simulate GPS Movement** — the admin and client views update the same way.
+This is equivalent to:
 
-The landing page (<http://localhost:3000/>) has one-click buttons for all three roles.
+```bash
+npm run db:push
+npm run db:seed
+```
 
 ---
 
-## 🗺️ Routes
+# 📜 Available Scripts
 
-**Public**
-- `/` — landing / role entry
-- `/track/[code]` — client tracking page (e.g. `/track/CIT-1001`)
-
-**Dispatcher / Admin**
-- `/admin` — dashboard
-- `/admin/deliveries` — deliveries list (filterable)
-- `/admin/deliveries/new` — create delivery
-- `/admin/deliveries/[code]` — delivery detail & controls
-- `/admin/drivers` — driver roster
-- `/admin/tracking` — live tracking board
-
-**Driver**
-- `/driver` — mobile driver app
-
-**API**
-- `GET /api/deliveries` · `POST /api/deliveries`
-- `GET /api/deliveries/[code]`
-- `POST /api/deliveries/[code]/action` — driver actions & driver assignment
-- `POST /api/deliveries/[code]/simulate` — start/stop simulation
-- `GET /api/deliveries/[code]/stream` — per-delivery SSE feed
-- `GET /api/stream` — global SSE feed
-- `GET /api/drivers` · `GET /api/clients`
+| Command             | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `npm run dev`       | Start the development server                 |
+| `npm run build`     | Create a production build                    |
+| `npm run start`     | Start the production server                  |
+| `npm run lint`      | Run ESLint                                   |
+| `npm run typecheck` | Run TypeScript checks without emitting files |
+| `npm run db:push`   | Apply the Prisma schema to the database      |
+| `npm run db:seed`   | Insert realistic demo data                   |
+| `npm run db:reset`  | Reset the database and re-seed demo data     |
+| `npm run setup`     | Run `db:push` and `db:seed`                  |
 
 ---
 
-## 🔑 "Credentials" / Access
+# 🎬 3-Minute Demo Flow
 
-There is **no login** for the prototype (by design). Choose a role from the landing page, or go straight to any route above. The client tracking page is intentionally public and reachable with only the tracking code.
+CITSecure is optimized for a short product demonstration.
 
-Seeded demo deliveries:
+### 1. Open the Dispatcher Dashboard
 
-| Code | Client | Status | Notes |
-| --- | --- | --- | --- |
-| **CIT-1001** | Acme Financial | IN_TRANSIT | Mid-route, primary demo delivery |
-| **CIT-1002** | Global Retail Bank | ASSIGNED | Awaiting pickup |
-| **CIT-1003** | United Cash Services | DELIVERED | Completed, full history |
+```text
+http://localhost:3000/admin
+```
 
-Drivers: Daniel Bekele, Samuel Tesfaye, Michael Adams (+ two available). Clients: Acme Financial, Global Retail Bank, United Cash Services.
+Show:
+
+* Active deliveries
+* In-transit deliveries
+* Awaiting pickup
+* Completed deliveries
+* Available drivers
+* Live delivery section
+
+### 2. Open the Primary Demo Delivery
+
+Navigate to:
+
+```text
+http://localhost:3000/admin/deliveries/CIT-1001
+```
+
+Show:
+
+* Delivery information
+* Map
+* Route
+* Driver position
+* ETA
+* Timeline
+* Delivery controls
+
+Copy the client tracking link.
+
+### 3. Open the Client Tracking Page
+
+Open a second browser tab:
+
+```text
+http://localhost:3000/track/CIT-1001
+```
+
+This represents the customer-facing tracking experience.
+
+### 4. Start the Live Simulation
+
+Return to the delivery detail page and click:
+
+**Start Live Delivery Simulation**
+
+### 5. Watch Both Screens Update
+
+Without refreshing either page:
+
+* The driver marker moves along the route
+* ETA counts down
+* Delivery status changes
+* Timeline events appear
+* Client status indicators advance
+* All connected views remain synchronized
+
+### 6. Delivery Completion
+
+The simulation eventually reaches:
+
+```text
+DELIVERED
+```
+
+The client page displays:
+
+> **Delivery completed successfully.**
 
 ---
 
-## 🗄️ Data Model (Prisma)
+# 🚚 Manual Driver Demo
 
-`User`, `Driver`, `Client`, `Delivery`, `DeliveryEvent` with proper relations and indexes (see `prisma/schema.prisma`). Delivery status, priority, roles, and event types are validated in `src/lib/domain.ts`.
+The delivery can also be progressed manually.
 
-## 🏗️ Architecture Notes
+Open:
 
-- **Real-time:** `src/lib/bus.ts` is an in-memory pub/sub. The SSE routes subscribe connections; `src/lib/deliveries.ts` broadcasts a full delivery snapshot on every change. Clients (`useDeliveryStream`, `useGlobalStream`) apply updates and fall back to 3s polling if the stream drops. Perfectly reliable for a single-process local demo.
-- **Simulation:** `src/lib/simulation.ts` holds per-delivery interval timers on `globalThis`, advancing progress, interpolating GPS coordinates, updating the DB, and firing milestone/status events. It stops itself on delivery.
+```text
+http://localhost:3000/driver
+```
 
-## ⚠️ Prototype Limitations
+Use the driver workflow:
 
-- **Not production-hardened:** no authentication/authorization, rate limiting, or multi-tenant isolation.
-- **In-memory real-time & simulation** assume a single Node process — great locally, but would need Redis/a job runner to scale horizontally.
-- **Straight-line routes:** the route/ETA are geometric interpolations, not real road routing or traffic-aware ETAs.
-- **PostgreSQL** database required for deployed environments.
-- Tuned for a punchy demo: a full simulated run takes ~40 seconds.
-#   C I T - S y s t e m  
- 
+```text
+Start Pickup
+→ Confirm Pickup
+→ Start Delivery
+→ Arriving Soon
+→ Mark Delivered
+```
+
+The admin dashboard and client tracking page receive the same real-time updates.
+
+The driver application also includes:
+
+**Simulate GPS Movement**
+
+for demonstrating live position updates.
+
+---
+
+# 🌐 Routes
+
+## Public Routes
+
+| Route           | Description                     |
+| --------------- | ------------------------------- |
+| `/`             | Landing page and role selection |
+| `/track/[code]` | Public client tracking page     |
+
+Example:
+
+```text
+/track/CIT-1001
+```
+
+## Dispatcher / Admin Routes
+
+| Route                      | Description                  |
+| -------------------------- | ---------------------------- |
+| `/admin`                   | Dispatcher dashboard         |
+| `/admin/deliveries`        | Deliveries list              |
+| `/admin/deliveries/new`    | Create a delivery            |
+| `/admin/deliveries/[code]` | Delivery detail and controls |
+| `/admin/drivers`           | Driver roster                |
+| `/admin/tracking`          | Live tracking board          |
+
+## Driver Route
+
+| Route     | Description                     |
+| --------- | ------------------------------- |
+| `/driver` | Mobile-first driver application |
+
+## API Routes
+
+### Deliveries
+
+```text
+GET  /api/deliveries
+POST /api/deliveries
+GET  /api/deliveries/[code]
+```
+
+### Delivery Actions
+
+```text
+POST /api/deliveries/[code]/action
+```
+
+Used for driver actions and driver assignment.
+
+### Simulation
+
+```text
+POST /api/deliveries/[code]/simulate
+```
+
+Used to start and stop the server-side GPS simulation.
+
+### Real-Time Streams
+
+Per-delivery stream:
+
+```text
+GET /api/deliveries/[code]/stream
+```
+
+Global stream:
+
+```text
+GET /api/stream
+```
+
+### Drivers and Clients
+
+```text
+GET /api/drivers
+GET /api/clients
+```
+
+---
+
+# 🔑 Access & Credentials
+
+There is **no authentication system in this prototype by design**.
+
+Users can select their role from the landing page or navigate directly to any route.
+
+The public client tracking page intentionally requires only a tracking code.
+
+---
+
+# 📦 Seeded Demo Data
+
+### Deliveries
+
+| Code         | Client               | Status       | Description                          |
+| ------------ | -------------------- | ------------ | ------------------------------------ |
+| **CIT-1001** | Acme Financial       | `IN_TRANSIT` | Primary live-tracking demo           |
+| **CIT-1002** | Global Retail Bank   | `ASSIGNED`   | Awaiting pickup                      |
+| **CIT-1003** | United Cash Services | `DELIVERED`  | Completed delivery with full history |
+
+### Drivers
+
+* Daniel Bekele
+* Samuel Tesfaye
+* Michael Adams
+* Two additional available drivers
+
+### Clients
+
+* Acme Financial
+* Global Retail Bank
+* United Cash Services
+
+---
+
+# 🗄️ Data Model
+
+CITSecure uses Prisma with PostgreSQL.
+
+The core entities are:
+
+```text
+User
+Driver
+Client
+Delivery
+DeliveryEvent
+```
+
+The entities are connected using Prisma relations with appropriate indexes.
+
+Delivery-related values such as:
+
+* Status
+* Priority
+* Roles
+* Event types
+
+are validated in:
+
+```text
+src/lib/domain.ts
+```
+
+---
+
+# 🏗️ Architecture
+
+## Real-Time Communication
+
+Real-time updates are implemented using:
+
+```text
+src/lib/bus.ts
+```
+
+This module provides an in-memory publish/subscribe mechanism.
+
+The SSE endpoints subscribe to these events and push updates to connected clients.
+
+Whenever a delivery changes, the application broadcasts a complete delivery snapshot.
+
+Client-side hooks include:
+
+```text
+useDeliveryStream
+useGlobalStream
+```
+
+They:
+
+1. Connect to the SSE stream
+2. Apply live delivery updates
+3. Detect connection failures
+4. Automatically fall back to polling every 3 seconds
+
+This architecture is intentionally simple and reliable for a single-process demonstration.
+
+---
+
+## GPS Simulation
+
+The simulation logic is implemented in:
+
+```text
+src/lib/simulation.ts
+```
+
+It maintains per-delivery timers using `globalThis`.
+
+During simulation it:
+
+1. Calculates delivery progress
+2. Interpolates GPS coordinates
+3. Updates the database
+4. Creates delivery milestone events
+5. Broadcasts updates
+6. Advances delivery statuses
+7. Stops automatically when the delivery reaches `DELIVERED`
+
+---
+
+# ⚠️ Prototype Limitations
+
+CITSecure is intentionally designed as a **demonstration prototype**, not a production-hardened CIT logistics platform.
+
+### Authentication & Authorization
+
+The prototype does not currently implement:
+
+* User authentication
+* Authorization
+* Role-based access control
+* Secure driver authentication
+* Client identity verification
+
+### Rate Limiting
+
+API endpoints currently do not implement production-grade rate limiting.
+
+### Multi-Tenancy
+
+There is no tenant isolation model.
+
+### Real-Time Scalability
+
+The current SSE implementation uses an **in-memory pub/sub system**.
+
+This assumes a single Node.js process.
+
+For horizontally scaled deployments, the real-time layer should be moved to infrastructure such as:
+
+```text
+Redis
+```
+
+or another distributed event/pub-sub system.
+
+### Simulation Scalability
+
+The GPS simulation also runs in-process.
+
+A production implementation should use a dedicated:
+
+* Background job worker
+* Queue
+* Scheduler
+* Distributed job system
+
+### Routing
+
+Routes currently use straight-line geometric interpolation.
+
+They do **not** represent:
+
+* Actual road networks
+* Traffic conditions
+* Road closures
+* Real driving routes
+* Traffic-aware ETA calculations
+
+A production implementation could integrate a routing provider such as Mapbox Directions or another routing engine.
+
+### Database
+
+A hosted **PostgreSQL** database is required for production deployment.
+
+### Demo Optimization
+
+The entire simulated delivery run is intentionally short and completes in approximately:
+
+```text
+40 seconds
+```
+
+This keeps the workflow suitable for live demonstrations.
+
+---
+
+# 🔮 Potential Production Enhancements
+
+CITSecure's prototype architecture can be extended with:
+
+* Secure authentication and authorization
+* Role-based permissions
+* Multi-tenant organizations
+* Redis-based real-time events
+* Background GPS processing workers
+* Real GPS device/mobile integration
+* Real road routing
+* Traffic-aware ETA
+* Geofencing
+* Driver identity verification
+* Proof-of-delivery workflows
+* Signature capture
+* Photo/document evidence
+* Notifications via SMS/email
+* Audit logs
+* Delivery security policies
+* Incident management
+* Advanced analytics
+* Monitoring and observability
+
+---
+
+# 📁 Project Structure
+
+A simplified structure:
+
+```text
+citsecure/
+├── prisma/
+│   ├── schema.prisma
+│   └── seed.*
+│
+├── src/
+│   ├── app/
+│   │   ├── admin/
+│   │   ├── driver/
+│   │   ├── track/
+│   │   └── api/
+│   │
+│   ├── lib/
+│   │   ├── bus.ts
+│   │   ├── deliveries.ts
+│   │   ├── domain.ts
+│   │   └── simulation.ts
+│   │
+│   └── ...
+│
+├── .env.example
+├── package.json
+├── prisma.config.*
+└── README.md
+```
+
+---
+
+# 📄 License
+
+This project is a prototype created for demonstration and evaluation purposes.
